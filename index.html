@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Saharaway Management</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial,Tahoma,sans-serif;
+  background:#f4f6f8;
+  color:#1f2937;
+}
+header{
+  background:#111827;
+  color:white;
+  padding:16px;
+  position:sticky;
+  top:0;
+  z-index:10;
+}
+.header{
+  max-width:1100px;
+  margin:auto;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.logo{
+  font-size:22px;
+  font-weight:bold;
+}
+.container{
+  max-width:1100px;
+  margin:auto;
+  padding:15px;
+}
+.nav{
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+  padding:10px 0;
+}
+.nav button{
+  border:0;
+  background:white;
+  padding:11px 15px;
+  border-radius:10px;
+  cursor:pointer;
+  white-space:nowrap;
+  box-shadow:0 1px 4px #ddd;
+}
+.nav button.active{
+  background:#111827;
+  color:white;
+}
+.page{display:none}
+.page.active{display:block}
+.cards{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+}
+.card{
+  background:white;
+  border-radius:14px;
+  padding:16px;
+  box-shadow:0 2px 8px #ddd;
+}
+.card h3{
+  margin:0 0 8px;
+  font-size:14px;
+  color:#6b7280;
+}
+.number{
+  font-size:25px;
+  font-weight:bold;
+}
+.section{
+  background:white;
+  margin-top:15px;
+  padding:15px;
+  border-radius:14px;
+  box-shadow:0 2px 8px #ddd;
+}
+.section h2{
+  margin-top:0;
+}
+form{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+}
+input,select,textarea{
+  width:100%;
+  padding:12px;
+  border:1px solid #d1d5db;
+  border-radius:9px;
+  font-size:15px;
+}
+textarea{
+  min-height:80px;
+}
+.full{grid-column:1/-1}
+button.primary{
+  background:#111827;
+  color:white;
+  border:0;
+  padding:12px 18px;
+  border-radius:9px;
+  cursor:pointer;
+}
+button.danger{
+  background:#dc2626;
+  color:white;
+  border:0;
+  padding:7px 10px;
+  border-radius:7px;
+}
+button.small{
+  padding:7px 10px;
+  border:0;
+  border-radius:7px;
+  cursor:pointer;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:12px;
+}
+th,td{
+  border-bottom:1px solid #eee;
+  padding:10px;
+  text-align:right;
+  white-space:nowrap;
+}
+th{
+  background:#f9fafb;
+}
+.table-wrap{
+  overflow-x:auto;
+}
+.badge{
+  padding:5px 8px;
+  border-radius:20px;
+  background:#e5e7eb;
+  font-size:12px;
+}
+.profit{
+  color:#15803d;
+  font-weight:bold;
+}
+.loss{
+  color:#dc2626;
+  font-weight:bold;
+}
+.actions{
+  display:flex;
+  gap:5px;
+}
+.empty{
+  text-align:center;
+  padding:25px;
+  color:#6b7280;
+}
+@media(max-width:700px){
+  .cards{
+    grid-template-columns:repeat(2,1fr);
+  }
+  form{
+    grid-template-columns:1fr;
+  }
+  .full{
+    grid-column:auto;
+  }
+  header{
+    position:relative;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="header">
+    <div class="logo">Saharaway ✈️</div>
+    <div id="today"></div>
+  </div>
+</header>
+
+<div class="container">
+
+<div class="nav">
+  <button class="active" onclick="showPage('dashboard',this)">الرئيسية</button>
+  <button onclick="showPage('trips',this)">الرحلات</button>
+  <button onclick="showPage('customers',this)">العملاء</button>
+  <button onclick="showPage('suppliers',this)">الموردين</button>
+  <button onclick="showPage('payments',this)">التحصيلات</button>
+  <button onclick="showPage('supplierPayments',this)">مدفوعات الموردين</button>
+  <button onclick="showPage('expenses',this)">المصروفات</button>
+  <button onclick="showPage('backup',this)">النسخ الاحتياطي</button>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard" class="page active">
+
+  <div class="cards">
+    <div class="card">
+      <h3>عدد الرحلات</h3>
+      <div class="number" id="totalTrips">0</div>
+    </div>
+
+    <div class="card">
+      <h3>العملاء</h3>
+      <div class="number" id="totalCustomers">0</div>
+    </div>
+
+    <div class="card">
+      <h3>تحصيلات العملاء</h3>
+      <div class="number" id="customerMoney">0</div>
+    </div>
+
+    <div class="card">
+      <h3>صافي الربح</h3>
+      <div class="number profit" id="totalProfit">0</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>ملخص سريع</h2>
+    <p>من هنا تقدر تتابع الحجوزات والتحصيلات والموردين والأرباح.</p>
+  </div>
+
+  <div class="section">
+    <h2>آخر الرحلات</h2>
+    <div id="recentTrips"></div>
+  </div>
+
+</div>
+
+<!-- TRIPS -->
+<div id="trips" class="page">
+
+  <div class="section">
+    <h2>إضافة رحلة</h2>
+
+    <form id="tripForm">
+
+      <input id="tripName" placeholder="اسم الرحلة" required>
+
+      <input id="tripDate" type="date" required>
+
+      <input id="tripCustomer" placeholder="اسم العميل">
+
+      <input id="tripHotel" placeholder="اسم الفندق">
+
+      <input id="tripPax" type="number" placeholder="عدد الأشخاص" value="1">
+
+      <input id="tripSale" type="number" step="0.01" placeholder="سعر البيع">
+
+      <select id="tripCurrency">
+        <option value="EUR">يورو €</option>
+        <option value="EGP">جنيه مصري</option>
+      </select>
+
+      <select id="tripSupplier">
+        <option value="">اختر المورد</option>
+      </select>
+
+      <input id="tripCost" type="number" step="0.01" placeholder="تكلفة المورد">
+
+      <select id="tripStatus">
+        <option value="محجوز">محجوز</option>
+        <option value="تم">تمت الرحلة</option>
+        <option value="ملغي">ملغي</option>
+      </select>
+
+      <textarea id="tripNotes" class="full" placeholder="ملاحظات"></textarea>
+
+      <button class="primary full" type="submit">+ إضافة الرحلة</button>
+
+    </form>
+  </div>
+
+  <div class="section">
+    <h2>الرحلات المسجلة</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>التاريخ</th>
+            <th>الرحلة</th>
+            <th>العميل</th>
+            <th>الأشخاص</th>
+            <th>البيع</th>
+            <th>التكلفة</th>
+            <th>الربح</th>
+            <th>الحالة</th>
+            <th>حذف</th>
+          </tr>
+        </thead>
+        <tbody id="tripsTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- CUSTOMERS -->
+<div id="customers" class="page">
+
+  <div class="section">
+    <h2>إضافة عميل</h2>
+
+    <form id="customerForm">
+
+      <input id="customerName" placeholder="اسم العميل" required>
+
+      <input id="customerPhone" placeholder="رقم الهاتف">
+
+      <input id="customerHotel" placeholder="الفندق">
+
+      <input id="customerRoom" placeholder="رقم الغرفة">
+
+      <textarea id="customerNotes" class="full" placeholder="ملاحظات"></textarea>
+
+      <button class="primary full">+ إضافة العميل</button>
+
+    </form>
+  </div>
+
+  <div class="section">
+    <h2>العملاء</h2>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>الاسم</th>
+            <th>الهاتف</th>
+            <th>الفندق</th>
+            <th>الغرفة</th>
+            <th>حذف</th>
+          </tr>
+        </thead>
+
+        <tbody id="customersTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- SUPPLIERS -->
+<div id="suppliers" class="page">
+
+  <div class="section">
+    <h2>إضافة مورد</h2>
+
+    <form id="supplierForm">
+
+      <input id="supplierName" placeholder="اسم المورد / الشركة" required>
+
+      <input id="supplierPhone" placeholder="رقم الهاتف">
+
+      <input id="supplierType" placeholder="نوع الخدمة">
+
+      <textarea id="supplierNotes" class="full" placeholder="ملاحظات"></textarea>
+
+      <button class="primary full">+ إضافة المورد</button>
+
+    </form>
+  </div>
+
+  <div class="section">
+    <h2>الموردين</h2>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>الاسم</th>
+            <th>الهاتف</th>
+            <th>الخدمة</th>
+            <th>حذف</th>
+          </tr>
+        </thead>
+
+        <tbody id="suppliersTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- PAYMENTS -->
+<div id="payments" class="page">
+
+  <div class="section">
+    <h2>تحصيل من عميل</h2>
+
+    <form id="paymentForm">
+
+      <input id="paymentCustomer" placeholder="اسم العميل" required>
+
+      <input id="paymentDate" type="date" required>
+
+      <input id="paymentAmount" type="number" step="0.01" placeholder="المبلغ" required>
+
+      <select id="paymentCurrency">
+        <option value="EUR">يورو €</option>
+        <option value="EGP">جنيه مصري</option>
+      </select>
+
+      <select id="paymentMethod">
+        <option>كاش</option>
+        <option>تحويل بنكي</option>
+        <option>بطاقة</option>
+        <option>أخرى</option>
+      </select>
+
+      <input id="paymentTrip" placeholder="اسم الرحلة">
+
+      <textarea id="paymentNotes" class="full" placeholder="ملاحظات"></textarea>
+
+      <button class="primary full">+ تسجيل التحصيل</button>
+
+    </form>
+  </div>
+
+  <div class="section">
+    <h2>التحصيلات</h2>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>التاريخ</th>
+            <th>العميل</th>
+            <th>الرحلة</th>
+            <th>المبلغ</th>
+            <th>الطريقة</th>
+            <th>حذف</th>
+          </tr>
+        </thead>
+
+        <tbody id="paymentsTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- SUPPLIER PAYMENTS -->
+<div id="supplierPayments" class="page">
+
+  <div class="section">
+    <h2>دفع للمورد</h2>
+
+    <form id="supplierPaymentForm">
+
+      <select id="spSupplier">
+        <option value="">اختر المورد</option>
+      </select>
+
+      <input id="spDate" type="date" required>
+
+      <input id="spAmount" type="number" step="0.01" placeholder="المبلغ" required>
+
+      <select id="spCurrency">
+        <option value="EUR">يورو €</option>
+        <option value="EGP">جنيه مصري</option>
+      </select>
+
+      <input id="spTrip" placeholder="الرحلة">
+
+      <textarea id="spNotes" class="full" placeholder="ملاحظات"></textarea>
+
+      <button class="primary full">+ تسجيل الدفع</button>
+
+    </form>
+  </div>
+
+  <div class="section">
+    <h2>مدفوعات الموردين</h2>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>التاريخ</th>
+            <th>المورد</th>
+            <th>الرحلة</th>
+            <th>المبلغ</th>
+            <th>حذف</th>
+          </tr>
+        </thead>
+
+        <tbody id="supplierPaymentsTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- EXPENSES -->
+<div id="expenses" class="page">
+
+  <div class="section">
+
+    <h2>مصروف جديد</h2>
+
+    <form id="expenseForm">
+
+      <input id="expenseName" placeholder="نوع المصروف" required>
+
+      <input id="expenseDate" type="date" required>
+
+      <input id="expenseAmount" type="number" step="0.01" placeholder="المبلغ" required>
+
+      <select id="expenseCurrency">
+        <option value="EUR">يورو €</option>
+        <option value="EGP">جنيه مصري</option>
+      </select>
+
+      <textarea id="expenseNotes" class="full" placeholder="ملاحظات"></textarea>
+
+      <button class="primary full">+ إضافة المصروف</button>
+
+    </form>
+
+  </div>
+
+  <div class="section">
+
+    <h2>المصروفات</h2>
+
+    <div class="table-wrap">
+
+      <table>
+
+        <thead>
+          <tr>
+            <th>التاريخ</th>
+            <th>المصروف</th>
+            <th>المبلغ</th>
+            <th>حذف</th>
+          </tr>
+        </thead>
+
+        <tbody id="expensesTable"></tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- BACKUP -->
+<div id="backup" class="page">
+
+  <div class="section">
+
+    <h2>النسخ الاحتياطي</h2>
+
+    <p>
+      استخدم النسخ الاحتياطي لحفظ بياناتك كملف على الهاتف.
+    </p>
+
+    <button class="primary" onclick="backupData()">
+      تحميل نسخة احتياطية
+    </button>
+
+    <br><br>
+
+    <input type="file" id="restoreFile" accept=".json">
+
+    <br><br>
+
+    <button class="primary" onclick="restoreData()">
+      استرجاع نسخة احتياطية
+    </button>
+
+  </div>
+
+  <div class="section">
+
+    <h2>تنبيه</h2>
+
+    <p>
+      النسخة الحالية تحفظ البيانات على نفس الجهاز والمتصفح.
+      لاحقًا سنربطها بقاعدة بيانات أونلاين بحيث الموظفين يشوفوا نفس البيانات.
+    </p>
+
+  </div>
+
+</div>
+
+</div>
+
+<script>
+
+const KEY = "saharaway_data_v1";
+
+let db = JSON.parse(localStorage.getItem(KEY)) || {
+  trips: [],
+  customers: [],
+  suppliers: [],
+  payments: [],
+  supplierPayments: [],
+  expenses: []
+};
+
+function save(){
+  localStorage.setItem(KEY, JSON.stringify(db));
+  renderAll();
+}
+
+function id(){
+  return Date.now().toString() + Math.random().toString(16).slice(2);
+}
+
+function esc(text){
+  return String(text ?? "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;");
+}
+
+function money(amount,currency){
+  return Number(amount || 0).toLocaleString("en-US") +
+    (currency === "EUR" ? " €" : " ج.م");
+}
+
+function showPage(page,btn){
+
+  document.querySelectorAll(".page")
+    .forEach(x=>x.classList.remove("active"));
+
+  document.getElementById(page)
+    .classList.add("active");
+
+  document.querySelectorAll(".nav button")
+    .forEach(x=>x.classList.remove("active"));
+
+  btn.classList.add("active");
+
+}
+
+document.getElementById("today").textContent =
+  new Date().toLocaleDateString("ar-EG");
+
+
+// TRIPS
+
+document.getElementById("tripForm").addEventListener("submit",function(e){
+
+  e.preventDefault();
+
+  db.trips.push({
+    id:id(),
+    name:tripName.value,
+    date:tripDate.value,
+    customer:tripCustomer.value,
+    hotel:tripHotel.value,
+    pax:Number(tripPax.value || 1),
+    sale:Number(tripSale.value || 0),
+    currency:tripCurrency.value,
+    supplier:tripSupplier.value,
+    cost:Number(tripCost.value || 0),
+    status:tripStatus.value,
+    notes:tripNotes.value
+  });
+
+  this.reset();
+
+  tripPax.value = 1;
+
+  save();
+
+  alert("تم تسجيل الرحلة بنجاح");
+
+});
+
+
+// CUSTOMERS
+
+document.getElementById("customerForm").addEventListener("submit",function(e){
+
+  e.preventDefault();
+
+  db.customers.push({
+    id:id(),
+    name:customerName.value,
+    phone:customerPhone.value,
+    hotel:customerHotel.value,
+    room:customerRoom.value,
+    notes:customerNotes.value
+  });
+
+  this.reset();
+
+  save();
+
+  alert("تم إضافة العميل");
+
+});
+
+
+// SUPPLIERS
+
+document.getElementById("supplierForm").addEventListener("submit",function(e){
+
+  e.preventDefault();
+
+  db.suppliers.push({
+    id:id(),
+    name:supplierName.value,
+    phone:supplierPhone.value,
+    type:supplierType.value,
+    notes:supplierNotes.value
+  });
+
+  this.reset();
+
+  save();
+
+  alert("تم إضافة المورد");
+
+});
+
+
+// CUSTOMER PAYMENTS
+
+document.getElementById("paymentForm").addEventListener("submit",function(e){
+
+  e.preventDefault();
+
+  db.payments.push({
+    id:id(),
+    customer:paymentCustomer.value,
+    date:paymentDate.value,
+    amount:Number(paymentAmount.value || 0),
+    currency:paymentCurrency.value,
+    method:paymentMethod.value,
+    trip:paymentTrip.value,
+    notes:paymentNotes.value
+  });
+
+  this.reset();
+
+  save();
+
+  alert("تم تسجيل التحصيل");
+
+});
+
+
+// SUPPLIER PAYMENTS
+
+document.getElementById("supplierPaymentForm").addEventListener("submit",function(e){
+
+  e.preventDefault();
+
+  db.supplierPayments.push({
+    id:id(),
+    supplier:spSupplier.value,
+    date:spDate.value,
+    amount:Number(spAmount.value || 0),
+    currency:spCurrency.value,
+    trip:spTrip.value,
+    notes:spNotes.value
+  });
+
+  this.reset();
+
+  save();
+
+  alert("تم تسجيل الدفع للمورد");
+
+});
+
+
+// EXPENSES
+
+document.getElementById("expenseForm").addEventListener("submit",function(e){
+
+  e.preventDefault();
+
+  db.expenses.push({
+    id:id(),
+    name:expenseName.value,
+    date:expenseDate.value,
+    amount:Number(expenseAmount.value || 0),
+    currency:expenseCurrency.value,
+    notes:expenseNotes.value
+  });
+
+  this.reset();
+
+  save();
+
+  alert("تم تسجيل المصروف");
+
+});
+
+
+// DELETE
+
+function deleteItem(type,itemId){
+
+  if(!confirm("هل أنت متأكد من الحذف؟")) return;
+
+  db[type] = db[type].filter(x=>x.id !== itemId);
+
+  save();
+
+}
+
+
+// RENDER
+
+function renderAll(){
+
+  renderSuppliers();
+
+  renderSupplierSelects();
+
+  renderTrips();
+
+  renderCustomers();
+
+  renderPayments();
+
+  renderSupplierPayments();
+
+  renderExpenses();
+
+  dashboard();
+
+}
+
+
+// SUPPLIERS
+
+function renderSuppliers(){
+
+  let html = "";
+
+  db.suppliers.forEach(s=>{
+
+    html += `
+      <tr>
+        <td>${esc(s.name)}</td>
+        <td>${esc(s.phone)}</td>
+        <td>${esc(s.type)}</td>
+        <td>
+          <button class="danger"
+            onclick="deleteItem('suppliers','${s.id}')">
+            حذف
+          </button>
+        </td>
+      </tr>
+    `;
+
+  });
+
+  suppliersTable.innerHTML =
+    html || `<tr><td colspan="4" class="empty">لا يوجد موردين</td></tr>`;
+
+}
+
+
+// SUPPLIER SELECT
+
+function renderSupplierSelects(){
+
+  let html = `<option value="">اختر المورد</option>`;
+
+  db.suppliers.forEach(s=>{
+    html += `<option value="${esc(s.name)}">${esc(s.name)}</option>`;
+  });
+
+  tripSupplier.innerHTML = html;
+
+  spSupplier.innerHTML = html;
+
+}
+
+
+// TRIPS
+
+function renderTrips(){
+
+  let html = "";
+
+  [...db.trips]
+  .sort((a,b)=>b.date.localeCompare(a.date))
+  .forEach(t=>{
+
+    let profit = Number(t.sale) - Number(t.cost);
+
+    html += `
+      <tr>
+        <td>${esc(t.date)}</td>
+        <td>${esc(t.name)}</td>
+        <td>${esc(t.customer)}</td>
+        <td>${t.pax}</td>
+        <td>${money(t.sale,t.currency)}</td>
+        <td>${money(t.cost,t.currency)}</td>
+        <td class="${profit>=0?'profit':'loss'}">
+          ${money(profit,t.currency)}
+        </td>
+        <td><span class="badge">${esc(t.status)}</span></td>
+        <td>
+          <button class="danger"
+            onclick="deleteItem('trips','${t.id}')">
+            حذف
+          </button>
+        </td>
+      </tr>
+    `;
+
+  });
+
+  tripsTable.innerHTML =
+    html || `<tr><td colspan="9" class="empty">لا توجد رحلات</td></tr>`;
+
+}
+
+
+// CUSTOMERS
+
+function renderCustomers(){
+
+  let html = "";
+
+  db.customers.forEach(c=>{
+
+    html += `
+      <tr>
+        <td>${esc(c.name)}</td>
+        <td>${esc(c.phone)}</td>
+        <td>${esc(c.hotel)}</td>
+        <td>${esc(c.room)}</td>
+        <td>
+          <button class="danger"
+            onclick="deleteItem('customers','${c.id}')">
+            حذف
+          </button>
+        </td>
+      </tr>
+    `;
+
+  });
+
+  customersTable.innerHTML =
+    html || `<tr><td colspan="5" class="empty">لا يوجد عملاء</td></tr>`;
+
+}
+
+
+// PAYMENTS
+
+function renderPayments(){
+
+  let html = "";
+
+  db.payments.forEach(p=>{
+
+    html += `
+      <tr>
+        <td>${esc(p.date)}</td>
+        <td>${esc(p.customer)}</td>
+        <td>${esc(p.trip)}</td>
+        <td>${money(p.amount,p.currency)}</td>
+        <td>${esc(p.method)}</td>
+        <td>
+          <button class="danger"
+            onclick="deleteItem('payments','${p.id}')">
+            حذف
+          </button>
+        </td>
+      </tr>
+    `;
+
+  });
+
+  paymentsTable.innerHTML =
+    html || `<tr><td colspan="6" class="empty">لا توجد تحصيلات</td></tr>`;
+
+}
+
+
+// SUPPLIER PAYMENTS
+
+function renderSupplierPayments(){
+
+  let html = "";
+
+  db.supplierPayments.forEach(p=>{
+
+    html += `
+      <tr>
+        <td>${esc(p.date)}</td>
+        <td>${esc(p.supplier)}</td>
+        <td>${esc(p.trip)}</td>
+        <td>${money(p.amount,p.currency)}</td>
+        <td>
+          <button class="danger"
+            onclick="deleteItem('supplierPayments','${p.id}')">
+            حذف
+          </button>
+        </td>
+      </tr>
+    `;
+
+  });
+
+  supplierPaymentsTable.innerHTML =
+    html ||
+    `<tr><td colspan="5" class="empty">لا توجد مدفوعات</td></tr>`;
+
+}
+
+
+// EXPENSES
+
+function renderExpenses(){
+
+  let html = "";
+
+  db.expenses.forEach(x=>{
+
+    html += `
+      <tr>
+        <td>${esc(x.date)}</td>
+        <td>${esc(x.name)}</td>
+        <td>${money(x.amount,x.currency)}</td>
+        <td>
+          <button class="danger"
+            onclick="deleteItem('expenses','${x.id}')">
+            حذف
+          </button>
+        </td>
+      </tr>
+    `;
+
+  });
+
+  expensesTable.innerHTML =
+    html ||
+    `<tr><td colspan="4" class="empty">لا توجد مصروفات</td></tr>`;
+
+}
+
+
+// DASHBOARD
+
+function dashboard(){
+
+  totalTrips.textContent = db.trips.length;
+
+  totalCustomers.textContent = db.customers.length;
+
+  let eur = db.payments
+    .filter(x=>x.currency==="EUR")
+    .reduce((a,b)=>a+Number(b.amount),0);
+
+  let egp = db.payments
+    .filter(x=>x.currency==="EGP")
+    .reduce((a,b)=>a+Number(b.amount),0);
+
+  customerMoney.textContent =
+    eur.toLocaleString("en-US")+" € / "+
+    egp.toLocaleString("en-US")+" ج.م";
+
+  let profitEUR = db.trips
+    .filter(x=>x.currency==="EUR")
+    .reduce((a,b)=>a+Number(b.sale)-Number(b.cost),0);
+
+  let profitEGP = db.trips
+    .filter(x=>x.currency==="EGP")
+    .reduce((a,b)=>a+Number(b.sale)-Number(b.cost),0);
+
+  totalProfit.textContent =
+    profitEUR.toLocaleString("en-US")+" € / "+
+    profitEGP.toLocaleString("en-US")+" ج.م";
+
+  let html = "";
+
+  [...db.trips]
+  .sort((a,b)=>b.date.localeCompare(a.date))
+  .slice(0,5)
+  .forEach(t=>{
+
+    html += `
+      <div style="
+        padding:12px;
+        border-bottom:1px solid #eee;
+        display:flex;
+        justify-content:space-between;
+        gap:10px;
+      ">
+        <div>
+          <b>${esc(t.name)}</b><br>
+          <small>${esc(t.customer)} - ${esc(t.date)}</small>
+        </div>
+        <div>
+          ${money(t.sale,t.currency)}
+        </div>
+      </div>
+    `;
+
+  });
+
+  recentTrips.innerHTML =
+    html || `<div class="empty">لا توجد رحلات حتى الآن</div>`;
+
+}
+
+
+// BACKUP
+
+function backupData(){
+
+  const blob = new Blob(
+    [JSON.stringify(db,null,2)],
+    {type:"application/json"}
+  );
+
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+
+  a.href = url;
+
+  a.download =
+    "saharaway-backup-" +
+    new Date().toISOString().slice(0,10) +
+    ".json";
+
+  a.click();
+
+  URL.revokeObjectURL(url);
+
+}
+
+
+function restoreData(){
+
+  const file =
+    document.getElementById("restoreFile").files[0];
+
+  if(!file){
+    alert("اختر ملف النسخة الاحتياطية أولًا");
+    return;
+  }
+
+  const reader = new FileReader();
+
+  reader.onload = function(){
+
+    try{
+
+      const imported =
+        JSON.parse(reader.result);
+
+      if(!imported.trips ||
+         !imported.customers ||
+         !imported.suppliers){
+
+        throw new Error();
+
+      }
+
+      db = imported;
+
+      save();
+
+      alert("تم استرجاع البيانات بنجاح");
+
+    }catch(e){
+
+      alert("الملف غير صالح");
+
+    }
+
+  };
+
+  reader.readAsText(file);
+
+}
+
+
+// START
+
+renderAll();
+
+</script>
+
+</body>
+        </html>
